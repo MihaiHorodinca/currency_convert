@@ -1,11 +1,6 @@
 package com.awin.currencyconverter.controller;
 
-import com.awin.currencyconverter.service.CurrencyExchangeRateService;
 import com.awin.currencyconverter.service.CurrencyService;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +25,7 @@ public class CurrencyController {
     public String home() {
         logger.info("Got one request for root path!");
 
-        return "Welcome to the Currency Converter!\n";
+        return "Welcome to the Currency Converter!";
     }
 
     @GetMapping(value = "currencies/convert", produces = MediaType.APPLICATION_JSON_VALUE)

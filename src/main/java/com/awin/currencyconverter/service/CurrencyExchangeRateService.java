@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.awin.currencyconverter.exceptions.CurrencyConversionException;
 import com.awin.currencyconverter.exceptions.ExternalServiceException;
+import com.awin.currencyconverter.exceptions.InvalidRequestException;
 
 import org.springframework.web.client.HttpServerErrorException;
 import org.json.JSONObject;

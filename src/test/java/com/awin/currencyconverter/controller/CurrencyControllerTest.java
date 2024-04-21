@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 @SpringBootTest
 @AutoConfigureMockMvc
 class CurrencyControllerTest {
@@ -22,30 +21,76 @@ class CurrencyControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    public void should_convert_EUR_to_USD_with_rate_greater_than_1() throws Exception {
-        this.mockMvc.perform(get("/currencies/convert?source=EUR&target=USD&amount=1"))
+    public void GIVEN_rootPath_WHEN_requestIsMade_THEN_returnWelcomeMessage() throws Exception {
+        mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(
-                        new AssertionMatcher<>() {
-                            @Override
-                            public void assertion(String value) throws AssertionError {
-                                assertThat(parseDouble(value)).isGreaterThan(1.0);
-                            }
-                        })
-                );
+                .andExpect(content().string("Welcome to the Currency Converter!"));
     }
 
     @Test
-    public void should_convert_USD_to_EUR_with_rate_less_than_1() throws Exception {
-        this.mockMvc.perform(get("/currencies/convert?source=USD&target=EUR&amount=1"))
+    public void GIVEN_validEURtoUSDConversion_WHEN_requestIsMade_THEN_rateIsGreaterThanOne() throws Exception {
+        mockMvc.perform(get("/currencies/convert?source=EUR&target=USD&amount=1"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(
-                        new AssertionMatcher<>() {
-                            @Override
-                            public void assertion(String value) throws AssertionError {
-                                assertThat(parseDouble(value)).isLessThan(1.0);
-                            }
-                        })
-                );
+                .andExpect(content().string(new AssertionMatcher<>() {
+                    @Override
+                    public void assertion(String value) throws AssertionError {
+                        assertThat(parseDouble(value)).isGreaterThan(1.0);
+                    }
+                }));
     }
+
+    @Test
+    public void GIVEN_validUSDToEURConversion_WHEN_requestIsMade_THEN_rateIsLessThanOne() throws Exception {
+        mockMvc.perform(get("/currencies/convert?source=USD&target=EUR&amount=1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(new AssertionMatcher<>() {
+                    @Override
+                    public void assertion(String value) throws AssertionError {
+                        assertThat(parseDouble(value)).isLessThan(1.0);
+                    }
+                }));
+    }
+
+    @Test
+    public void GIVEN_missingSourceParameter_WHEN_requestIsMade_THEN_returnBadRequest() throws Exception {
+        mockMvc.perform(get("/currencies/convert?target=USD&amount=1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Missing request parameter: source"));
+    }
+
+    @Test
+    public void GIVEN_missingTargetParameter_WHEN_requestIsMade_THEN_returnBadRequest() throws Exception {
+        mockMvc.perform(get("/currencies/convert?source=USD&amount=1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Missing request parameter: target"));
+    }
+
+    @Test
+    public void GIVEN_missingAmountParameter_WHEN_requestIsMade_THEN_returnBadRequest() throws Exception {
+        mockMvc.perform(get("/currencies/convert?source=USD&target=EUR"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Missing request parameter: amount"));
+    }
+
+    @Test
+    public void GIVEN_invalidSource_WHEN_requestIsMade_THEN_returnBadRequestWithInvalidSourceMessage() throws Exception {
+        mockMvc.perform(get("/currencies/convert?source=INVALID&target=USD&amount=1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Failed to convert currency: You have entered an invalid \"from\" property. [Example: from=EUR]"));
+    }
+
+    @Test
+    public void GIVEN_invalidTarget_WHEN_requestIsMade_THEN_returnBadRequestWithInvalidTargetMessage() throws Exception {
+        mockMvc.perform(get("/currencies/convert?source=USD&target=INVALID&amount=1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Failed to convert currency: You have entered an invalid \"to\" property. [Example: to=GBP]"));
+    }
+
+    @Test
+    public void GIVEN_invalidAmount_WHEN_requestIsMade_THEN_returnBadRequestWithInvalidAmountMessage() throws Exception {
+        mockMvc.perform(get("/currencies/convert?source=USD&target=EUR&amount=-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Failed to convert currency: You have not specified an amount to be converted. [Example: amount=5]"));
+    }
+
 }
